@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="min-h-screen">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reservation System</title>
     {% load static %}
+    <link rel="stylesheet" href="{% static 'main/css/styles.css' %}">
     <script src="{% static 'main/js/scripts.js' %}"></script>
     <script>
         const LOGIN_REDIRECT_URL = "{% url 'login_redirect' %}";
         const GET_USER_INFO = "{% url 'get_user_info' %}";
         const RESERVATION = "{% url 'reservation' %}";
+        const AIX_LOGO = "{% static 'main/images/AIX_logo.svg' %}";
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
@@ -19,76 +21,87 @@
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div class="flex">
+<body class="bg-gray-100 min-h-screen flex flex-col gap-10">
+    <div class="flex flex-1">
         <!-- Sidebar -->
         <div class="w-1/4 bg-gray-200 p-6">
-            <h1 class="text-xl font-bold mb-4">SOONGSIL UNIV. IT</h1>
-            <h2 class="text-2xl font-bold mb-4">사물함 예약 시스템</h1>
+            <h1 class="text-4xl font-bold mb-10">2024-2 DataBase</h1>
+            <h2 class="text-3xl font-bold mb-10">Locks</h2>
+            <h2 class="text-3xl font-bold mb-2">AI융합학부</h2>
+            <h2 class="text-3xl font-bold mb-10">사물함 단기 대여 시스템</h2>
             <div id="content">
-                {% if login_status == 'fail' %}
-                    <p class="text-red-500 font-semibold">로그인 실패. 다시 시도해주세요.</p>
-                    <button onclick="startLogin()" class="bg-blue-500 text-white py-2 px-4 rounded mt-4">통합 로그인</button>
-                {% else %}
-                    <button onclick="startLogin()" class="bg-blue-500 text-white py-2 px-4 rounded">통합 로그인</button>
-                {% endif %}
+                <button id="login-button" class="login-button" onclick="startLogin()">
+                    <span id="login-text">통합 로그인</span>
+                    <img id="login-icon" src="{% static 'main/images/AIX_logo.svg' %}" alt="로그인 아이콘" class="login-icon">
+                </button>
+                <div id="error-container" style="margin-top: 1rem; min-height: 3rem;">
+                    <p id="error-message" class="error-message text-red-500 font-semibold hidden"></p>
+                </div>
             </div>
-            <div class="flex items-center text-gray-600">
-                <span class="material-icons">info</span>
-                <a href="#" class="ml-2">도움이 필요하신가요?</a>
+            <!-- 정보 아이콘과 개발자 정보 섹션 -->
+            <div class="mt-auto">
+                <button id="info-button" class="flex items-center text-gray-600 focus:outline-none">
+                    <span class="material-icons">info</span>
+                    <svg id="toggle-icon" class="w-4 h-4 ml-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="developer-info" class="hidden mt-2 p-4 bg-gray-300 rounded mt-10">
+                    <p class="text-m">개발자 정보</p>
+                    <p class="text-sm">AI융합학부</p>
+                    <p class="text-sm">장재혁 20233109</p>
+                    <p class="text-sm">정해찬 20231784</p>
+                    <p class="text-sm">허인혜 20231786</p>
+                </div>
             </div>
         </div>
         <!-- Main Content -->
-        <div class="w-3/4 p-6">
+        <div class="w-3/4 p-6 overflow-y-auto">
             <div class="flex items-center mb-6">
-                <h2 class="text-xl font-bold mr-2">사물함 예약 현황</h2>
-                <span class="text-sm text-gray-500">11/25</span>
+                <h2 class="text-4xl font-bold mr-2">사물함 예약 현황</h2>
+                <span id="current-date" class="text-sm text-gray-500"></span>
             </div>
             <div class="flex space-x-4 mb-6">
-                <div class="bg-white p-4 rounded shadow w-1/5">
-                    <h3 class="text-lg font-bold text-blue-500">AI융합학부</h3>
-                    <p class="text-3xl font-bold text-blue-500">56</p>
-                    <p class="text-sm text-gray-500">/90</p>
-                    <p class="text-xs text-gray-500">9/24 12:00 ~ 9/27 23:59</p>
+                <div class="bg-white p-4 rounded shadow w-1/6">
+                    <h3 class="text-lg font-bold text-blue-500">형남공학관 B1</h3>
+                    <p class="text-5xl font-bold text-blue-500">70</p>
+                    <p class="text-m text-right text-gray-500">/70</p>
                 </div>
-                <div class="bg-white p-4 rounded shadow w-1/5">
-                    <h3 class="text-lg font-bold text-blue-500">컴퓨터학부</h3>
-                    <p class="text-3xl font-bold text-blue-500">398</p>
-                    <p class="text-sm text-gray-500">/430</p>
-                    <p class="text-xs text-gray-500">9/23 00:00 ~</p>
-                </div>
-                <div class="bg-white p-4 rounded shadow w-1/5">
-                    <h3 class="text-lg font-bold text-blue-500">전자정보공학부</h3>
-                    <p class="text-3xl font-bold text-blue-500">540</p>
-                    <p class="text-sm text-gray-500">/540</p>
-                    <p class="text-xs text-gray-500">9/23 00:00 ~</p>
-                </div>
-                <div class="bg-white p-4 rounded shadow w-1/5">
-                    <h3 class="text-lg font-bold text-blue-500">글로벌미디어학부</h3>
-                    <p class="text-3xl font-bold text-blue-500">237</p>
-                    <p class="text-sm text-gray-500">/300</p>
-                    <p class="text-xs text-gray-500">9/23 21:00 ~ 9/27 23:59</p>
-                </div>
-                <div class="bg-white p-4 rounded shadow w-1/5">
-                    <h3 class="text-lg font-bold text-blue-500">소프트웨어학부</h3>
-                    <p class="text-3xl font-bold text-blue-500">189</p>
-                    <p class="text-sm text-gray-500">/240</p>
-                    <p class="text-xs text-gray-500">9/23 10:00 ~</p>
+                <div class="bg-white p-4 rounded shadow w-1/6">
+                    <h3 class="text-lg font-bold text-blue-500">형남공학관 4F</h3>
+                    <p class="text-5xl font-bold text-blue-500">20</p>
+                    <p class="text-m text-right text-gray-500">/20</p>
                 </div>
             </div>
-            <h3 class="text-lg font-bold text-blue-500 mb-4">AI융합학부 층별 예약 현황</h3>
-            <div class="bg-white p-4 rounded shadow mb-4">
+            <h3 class="text-lg font-bold text-blue-500 mb-4">사물함 단기 대여 주의사항</h3>
+            <div class="bg-white p-4 rounded shadow mb-2">
                 <div class="flex justify-between items-center">
-                    <span class="text-lg">4F | 예약 가능</span>
-                    <span class="text-lg font-bold text-blue-500">55</span>
-                    <span class="text-sm text-gray-500">/70</span>
+                    <span class="text-lg">1. AI융합학부 재학생만 대여 가능합니다.</span>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded shadow mb-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg">2. 대여 기간은 최대 3일로 대여 기간 이외 사용 시 강제 철거될 수 있습니다.</span>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded shadow mb-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg">3. 분실 시 책임을 지지 않습니다.</span>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded shadow mb-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg">4. 부적절한 사용 적발 시 대여가 취소될 수 있습니다.</span>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded shadow mb-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg">5. 1인당 1개의 사물함만 대여 가능합니다.</span>
                 </div>
             </div>
             <div class="bg-white p-4 rounded shadow">
                 <div class="flex justify-between items-center">
-                    <span class="text-lg">B1 | 예약 가능</span>
-                    <span class="text-lg font-bold text-blue-500">1</span>
-                    <span class="text-sm text-gray-500">/20</span>
+                    <span class="text-lg">추가 문의 : 숭실대학교 AI융합학부 학생회</span>
                 </div>
             </div>
         </div>

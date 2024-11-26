@@ -15,7 +15,8 @@ def login_view(request):
     """
     sToken = request.GET.get('sToken')
     sIdno = request.GET.get('sIdno')
-    return render(request, 'main/login.html', {'sToken': sToken, 'sIdno': sIdno})
+    login_status = request.GET.get('login_status', '')  # 로그인 상태를 추가로 받기
+    return render(request, 'main/login.html', {'sToken': sToken, 'sIdno': sIdno, 'login_status': login_status})
 
 def login_redirect(request):
     """
@@ -35,7 +36,7 @@ def callback_view(request):
 
     if not sToken or not sIdno:
         # 토큰이 없으면 로그인 실패로 간주하고 로그인 페이지로 리디렉션
-        return redirect('login')
+        return redirect(f"{reverse('login')}?login_status=fail")
 
     # 로그인 페이지로 리디렉트하면서 토큰을 전달 (쿼리 파라미터로)
     return redirect(f"{reverse('login')}?sToken={sToken}&sIdno={sIdno}")
@@ -77,6 +78,7 @@ def parse_user_info(html_text):
         # 학번 및 소속 추출
         student_id = "알 수 없음"
         department = "알 수 없음"
+        is_enrolled = False  # 초기값 설정
 
         dt_tags = soup.find_all('dt')
         for dt in dt_tags:
@@ -88,11 +90,17 @@ def parse_user_info(html_text):
                 dd = dt.find_next_sibling('dd')
                 if dd and dd.find('strong'):
                     department = dd.find('strong').text.strip()
-                    
+            elif dt.text.strip() == '과정/학기':  # 재학 여부에 대한 태그가 있다고 가정
+                dd = dt.find_next_sibling('dd')
+                if dd and dd.find('strong'):
+                    status_text = dd.find('strong').text.strip()
+                    is_enrolled = status_text
+
         return {
             'name': name,
             'student_id': student_id,
             'department': department,
+            'is_enrolled': is_enrolled,
         }
     except Exception as e:
         print(f"Error parsing user info: {e}")
@@ -121,6 +129,12 @@ def get_user_info(request):
         user_info = parse_user_info(html_response)
 
         if user_info:
+            # 학부 및 재학 여부 확인
+            if user_info['department'] != 'AI융합학부':
+                return JsonResponse({'success': False, 'error': 'InvalidDepartment'}, status=200)
+            if not user_info['is_enrolled']:
+                return JsonResponse({'success': False, 'error': 'NotEnrolled'}, status=200)
+
             # 세션에 사용자 정보 저장
             request.session['user_info'] = user_info
             return JsonResponse({'success': True, 'user_info': user_info})
