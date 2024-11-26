@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-1/4 bg-gray-200 p-6">
+            <h1 class="text-xl font-bold mb-4">SOONGSIL UNIV. IT</h1>
+            <h2 class="text-2xl font-bold mb-4">사물함 예약 시스템</h1>
+            <div id="content">
+                {% if login_status == 'fail' %}
+                    <p class="text-red-500 font-semibold">로그인 실패. 다시 시도해주세요.</p>
+                    <button onclick="startLogin()" class="bg-blue-500 text-white py-2 px-4 rounded mt-4">통합 로그인</button>
+                {% else %}
+                    <button onclick="startLogin()" class="bg-blue-500 text-white py-2 px-4 rounded">통합 로그인</button>
+                {% endif %}
+            </div>
+            <div class="flex items-center text-gray-600">
+                <span class="material-icons">info</span>
+                <a href="#" class="ml-2">도움이 필요하신가요?</a>
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="w-3/4 p-6">
+            <div class="flex items-center mb-6">
+                <h2 class="text-xl font-bold mr-2">사물함 예약 현황</h2>
+                <span class="text-sm text-gray-500">11/25</span>
+            </div>
+            <div class="flex space-x-4 mb-6">
+                <div class="bg-white p-4 rounded shadow w-1/5">
+                    <h3 class="text-lg font-bold text-blue-500">AI융합학부</h3>
+                    <p class="text-3xl font-bold text-blue-500">56</p>
+                    <p class="text-sm text-gray-500">/90</p>
+                    <p class="text-xs text-gray-500">9/24 12:00 ~ 9/27 23:59</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow w-1/5">
+                    <h3 class="text-lg font-bold text-blue-500">컴퓨터학부</h3>
+                    <p class="text-3xl font-bold text-blue-500">398</p>
+                    <p class="text-sm text-gray-500">/430</p>
+                    <p class="text-xs text-gray-500">9/23 00:00 ~</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow w-1/5">
+                    <h3 class="text-lg font-bold text-blue-500">전자정보공학부</h3>
+                    <p class="text-3xl font-bold text-blue-500">540</p>
+                    <p class="text-sm text-gray-500">/540</p>
+                    <p class="text-xs text-gray-500">9/23 00:00 ~</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow w-1/5">
+                    <h3 class="text-lg font-bold text-blue-500">글로벌미디어학부</h3>
+                    <p class="text-3xl font-bold text-blue-500">237</p>
+                    <p class="text-sm text-gray-500">/300</p>
+                    <p class="text-xs text-gray-500">9/23 21:00 ~ 9/27 23:59</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow w-1/5">
+                    <h3 class="text-lg font-bold text-blue-500">소프트웨어학부</h3>
+                    <p class="text-3xl font-bold text-blue-500">189</p>
+                    <p class="text-sm text-gray-500">/240</p>
+                    <p class="text-xs text-gray-500">9/23 10:00 ~</p>
+                </div>
+            </div>
+            <h3 class="text-lg font-bold text-blue-500 mb-4">AI융합학부 층별 예약 현황</h3>
+            <div class="bg-white p-4 rounded shadow mb-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg">4F | 예약 가능</span>
+                    <span class="text-lg font-bold text-blue-500">55</span>
+                    <span class="text-sm text-gray-500">/70</span>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded shadow">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg">B1 | 예약 가능</span>
+                    <span class="text-lg font-bold text-blue-500">1</span>
+                    <span class="text-sm text-gray-500">/20</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startLogin() {
+            // "로그인 중" 메시지 표시
+            document.getElementById('content').innerHTML = `
+                <p class="text-blue-500 font-semibold">로그인 중...</p>
+            `;
+
+            // 로그인 페이지로 리디렉트
+            window.location.href = "{% url 'login_redirect' %}";
+        }
+
+        // 페이지 로드 시 쿼리 파라미터에서 sToken과 sIdno 가져오기
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sToken = urlParams.get('sToken');
+            const sIdno = urlParams.get('sIdno');
+
+            if (sToken && sIdno) {
+                // "로그인 중..." 메시지와 함께 사용자 정보 요청
+                document.getElementById('content').innerHTML = `
+                    <p class="text-blue-500 font-semibold">로그인 중...</p>
+                `;
+
+                // AJAX 요청을 통해 사용자 정보 가져오기
+                fetch("{% url 'get_user_info' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie('csrftoken')  // CSRF 토큰
+                    },
+                    body: JSON.stringify({
+                        "sToken": sToken,
+                        "sIdno": sIdno
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const userInfo = data.user_info;
+                        // 사용자 정보 표시
+                        document.getElementById('content').innerHTML = `
+                            <p class="text-blue-500 font-semibold">로그인 중...</p>
+                            <div class="mt-4">
+                                <h2 class="text-xl font-semibold">내 정보</h2>
+                                <p>이름: ${userInfo.name}</p>
+                                <p>학번: ${userInfo.student_id}</p>
+                                <p>소속: ${userInfo.department}</p>
+                            </div>
+                        `;
+
+                        // 2초 후 예약 페이지로 리디렉션
+                        setTimeout(function() {
+                            window.location.href = "{% url 'reservation' %}";
+                        }, 2000);
+                    } else {
+                        // 에러 메시지 표시
+                        document.getElementById('content').innerHTML = `
+                            <p class="text-red-500 font-semibold">로그인 실패. 다시 시도해주세요.</p>
+                            <button onclick="startLogin()" class="bg-blue-500 text-white py-2 px-4 rounded mt-4">통합 로그인</button>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('content').innerHTML = `
+                        <p class="text-red-500 font-semibold">로그인 과정에서 오류가 발생했습니다.</p>
+                        <button onclick="startLogin()" class="bg-blue-500 text-white py-2 px-4 rounded mt-4">통합 로그인</button>
+                    `;
+                });
+            }
+        }
+
+        // CSRF 토큰 가져오기 함수
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // 쿠키가 name으로 시작하는지 확인
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>
