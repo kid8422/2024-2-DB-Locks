@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko" class="min-h-screen">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataBase Management</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/css/admin.css' %}">
+    <script src="{% static 'main/js/admin.js' %}"></script>
+    <script>
+        const LOGOUT = "{% url 'dbadmin_logout' %}";
+        const LOCKERS = "{% url 'get_lockers_data' %}";
+        const RENT = "{% url 'get_rent_data' %}";
+        const LOG = "{% url 'get_log_data' %}";
+        const STUDENT = "{% url 'get_student_data' %}";
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col gap-10">
+    <div class="flex flex-1">
+        <!-- Sidebar -->
+        <div class="w-1/4 bg-gray-200 p-6">
+            <h1 class="text-4xl font-bold mb-10">2024-2 DataBase</h1>
+            <h2 class="text-3xl font-bold mb-10">Locks</h2>
+            <h2 class="text-3xl font-bold mb-2">관리자 페이지</h2>
+            <h2 class="text-3xl font-bold mb-10">DB 관리</h2>
+            <div class="mb-8">
+                <div class="text-lg font-bold mb-2">DB 테이블 선택</div>
+                <ul id="table-list">
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center p-2 bg-white rounded shadow" onclick="loadData(LOCKERS)">
+                            <span class="flex-grow">사물함 정보</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center p-2 bg-white rounded shadow" onclick="loadData(RENT)">
+                            <span class="flex-grow">대여 정보</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center p-2 bg-white rounded shadow" onclick="loadData(LOG)">
+                            <span class="flex-grow">대여 기록</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="mb-32">
+                        <a href="#" class="flex items-center p-2 bg-white rounded shadow" onclick="loadData(STUDENT)">
+                            <span class="flex-grow">대여자 정보</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="flex justify-between">
+                <button class="flex items-center p-2 bg-blue-600 text-white rounded shadow" onclick="location.href=LOGOUT">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Logout
+                </button>
+                <button class="flex items-center p-2 bg-green-600 text-white rounded shadow" onclick="window.location.href='/';">
+                    예약 페이지로
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="w-3/4 p-6 overflow-y-auto">
+            <div class="mb-4">
+                <h1 class="text-2xl font-bold" id="table-title">DB 테이블</h1>
+            </div>
+            <div class="flex mb-4">
+                <button class="px-4 py-2 bg-blue-600 text-white rounded shadow mr-2">사용자 추가</button>
+                <button class="px-4 py-2 bg-teal-600 text-white rounded shadow mr-2">가져오기</button>
+                <button class="px-4 py-2 bg-green-600 text-white rounded shadow">내보내기</button>
+            </div>
+            <div class="bg-white rounded shadow">
+                <div class="p-4">
+                    <input type="text" placeholder="검색하기..." class="w-full p-2 mb-4 border rounded">
+                    <table class="w-full text-left">
+                        <thead id="data-head" class="text-m font-bold mb-2">
+
+                        </thead>
+                        <tbody id="data-body">
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

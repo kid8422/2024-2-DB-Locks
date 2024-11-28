@@ -20,4 +20,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),  # main 앱의 URLs 포함
+    path('DBadmin/', include('dbadmin.urls')),
 ]

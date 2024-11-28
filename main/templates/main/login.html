@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reservation System</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'main/css/styles.css' %}">
-    <script src="{% static 'main/js/scripts.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'main/css/login.css' %}">
+    <script src="{% static 'main/js/login.js' %}"></script>
     <script>
         const LOGIN_REDIRECT_URL = "{% url 'login_redirect' %}";
         const GET_USER_INFO = "{% url 'get_user_info' %}";
@@ -64,13 +64,13 @@
             <div class="flex space-x-4 mb-6">
                 <div class="bg-white p-4 rounded shadow w-1/6">
                     <h3 class="text-lg font-bold text-blue-500">형남공학관 B1</h3>
-                    <p class="text-5xl font-bold text-blue-500">70</p>
-                    <p class="text-m text-right text-gray-500">/70</p>
+                    <p class="text-5xl font-bold text-blue-500">{{ b1_count }}</p>
+                    <p class="text-m text-right text-gray-500">/20</p>
                 </div>
                 <div class="bg-white p-4 rounded shadow w-1/6">
                     <h3 class="text-lg font-bold text-blue-500">형남공학관 4F</h3>
-                    <p class="text-5xl font-bold text-blue-500">20</p>
-                    <p class="text-m text-right text-gray-500">/20</p>
+                    <p class="text-5xl font-bold text-blue-500">{{ f4_count }}</p>
+                    <p class="text-m text-right text-gray-500">/70</p>
                 </div>
             </div>
             <h3 class="text-lg font-bold text-blue-500 mb-4">사물함 단기 대여 주의사항</h3>

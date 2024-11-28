@@ -66,8 +66,8 @@ ROOT_URLCONF = 'locker_reservation.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # 프로젝트 전역 템플릿 경로 (비워도 무방)
-        'APP_DIRS': True,  # 각 앱의 templates 디렉토리를 자동으로 검색
+        'DIRS': [BASE_DIR / 'dbadmin/templates'],  # dbadmin 템플릿 경로 추가
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',

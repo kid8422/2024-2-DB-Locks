@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage {{ table_name }}</title>
+</head>
+<body>
+    <h2>Manage Table: {{ table_name }}</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                {% for field in objects.model._meta.fields %}
+                    <th>{{ field.name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in objects %}
+                <tr>
+                    {% for field in objects.model._meta.fields %}
+                        <td>{{ obj|getattr:field.name }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

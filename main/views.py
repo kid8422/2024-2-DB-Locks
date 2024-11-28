@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.db import connection
 from bs4 import BeautifulSoup
 
 def login_view(request):
@@ -16,7 +17,17 @@ def login_view(request):
     sToken = request.GET.get('sToken')
     sIdno = request.GET.get('sIdno')
     login_status = request.GET.get('login_status', '')  # 로그인 상태를 추가로 받기
-    return render(request, 'main/login.html', {'sToken': sToken, 'sIdno': sIdno, 'login_status': login_status})
+
+    with connection.cursor() as cursor:
+        # B1의 rental_state가 1인 사물함 수 카운트
+        cursor.execute("SELECT COUNT(*) FROM lockers WHERE TAG = 'B1' AND rental_state = 'available'")
+        b1_count = cursor.fetchone()[0]
+
+        # 4F의 rental_state가 1인 사물함 수 카운트
+        cursor.execute("SELECT COUNT(*) FROM lockers WHERE TAG = '4F' AND rental_state = 'available'")
+        f4_count = cursor.fetchone()[0]
+
+    return render(request, 'main/login.html', {'sToken': sToken, 'sIdno': sIdno, 'login_status': login_status, 'b1_count': b1_count, 'f4_count': f4_count})
 
 def login_redirect(request):
     """
@@ -96,6 +107,8 @@ def parse_user_info(html_text):
                     status_text = dd.find('strong').text.strip()
                     is_enrolled = status_text
 
+        #print(name, student_id, department, is_enrolled)
+
         return {
             'name': name,
             'student_id': student_id,
@@ -163,3 +176,31 @@ def reservation_view(request):
     ]
 
     return render(request, 'main/reservation.html', {'user_info': user_info, 'lockers': lockers})
+
+def load_4F_lockers(request):
+    head = ('사물함 번호', '대여 구분')
+    with connection.cursor() as cursor:
+        cursor.execute("select locker_num, rental_state from lockers WHERE TAG = '4F'")
+        result = cursor.fetchall()
+    
+    # 데이터를 JSON으로 변환
+    data = {
+        "head": head,
+        "rows": [dict(zip(head, row)) for row in result]
+    }
+
+    return JsonResponse(data)
+
+def load_B1_lockers(request):
+    head = ('사물함 번호', '대여 구분')
+    with connection.cursor() as cursor:
+        cursor.execute("select locker_num, rental_state from lockers WHERE TAG = 'B1'")
+        result = cursor.fetchall()
+    
+    # 데이터를 JSON으로 변환
+    data = {
+        "head": head,
+        "rows": [dict(zip(head, row)) for row in result]
+    }
+
+    return JsonResponse(data)

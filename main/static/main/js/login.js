@@ -1,7 +1,6 @@
 function startLogin() {
     // 로그인 페이지로 리디렉트
     window.location.href = LOGIN_REDIRECT_URL;
-
 }
 
 // 페이지 로드 시 쿼리 파라미터에서 sToken과 sIdno 가져오기

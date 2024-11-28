@@ -1,0 +1,119 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 10px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-gap: 20px;
+    height: calc(100vh - 40px);
+}
+
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.info-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.info-item {
+    font-size: 0.875rem;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.reservation-status {
+    margin-bottom: 20px;
+}
+
+.center-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.map-placeholder {
+    height: 240px;
+    background-color: #e5e7eb;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.locker-selection {
+    flex: 1;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+.locker-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    padding: 4px;
+    justify-content: center;
+    margin: 0 auto; /* 가운데 정렬 */
+}
+
+.locker-item {
+    width: 64px;
+    height: 64px;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: transform 0.2s, brightness 0.2s;
+}
+
+.locker-item:hover {
+    transform: scale(1.05);
+}
+
+.locker-item:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.locker-label {
+    font-size: 10px;
+    color: gray;
+}
+
+.locker-number {
+    font-size: 18px;
+    font-weight: bold;
+    color: black;
+}
