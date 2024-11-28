@@ -1,13 +1,15 @@
 body {
+    user-select: none; /* 텍스트 선택 비활성화 */
     font-family: 'Roboto', sans-serif;
     max-width: 1600px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0px;
     height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
+
 /* 로그인 버튼 스타일 */
 .login-button {
     display: flex;

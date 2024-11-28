@@ -71,9 +71,9 @@ def get_lockers_data(request):
 
 @login_required(login_url='dbadmin_login')
 def get_rent_data(request):
-    head = ('사물함 번호', '대여자 학번', '대여 구분', '대여 날짜', '대여 기간')
+    head = ('사물함 번호', '이름', '학번', '학과(부)', '대여 구분', '대여 날짜', '대여 기간')
     with connection.cursor() as cursor:
-        cursor.execute("select * from rent")
+        cursor.execute("select locker_num, name, student_id, department, rent_type, date, duration from rent natural join student where rent.student_id = student.student_id")
         result = cursor.fetchall()
     
     # 데이터를 JSON으로 변환
