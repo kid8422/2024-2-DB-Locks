@@ -181,11 +181,21 @@ def update_data(request):
             data = json.loads(request.body)
             print(data)
             if data['table_name'] == 'lockers':
+                rental_state_mapping = {
+                    '이용 가능': 'available',
+                    '장기 대여': 'long',
+                    '단기 대여': 'short',
+                    '사용 불가': 'unavailable'
+                }
+                data['대여 여부'] = rental_state_mapping[data['대여 여부']]
+                print(0)
                 with connection.cursor() as cursor:
+                    print(1)
                     cursor.execute(
                         "UPDATE lockers SET rental_state = %s WHERE locker_num = %s",
-                        [data['rental_state'], data['사물함 번호']]
+                        [data['대여 여부'], data['사물함 번호']]
                     )
+                    print(2)
             elif data['table_name'] == 'rent':
                 rental_state_mapping = {
                     '이용 가능': 'available',
