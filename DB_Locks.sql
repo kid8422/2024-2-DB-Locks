@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `db_locks`.`lockers`;
 CREATE TABLE IF NOT EXISTS `db_locks`.`lockers` (
   `locker_num` INT UNSIGNED NOT NULL,
   `TAG` VARCHAR(5) NOT NULL,
-  `rental_state` ENUM('available', 'long', 'short') NOT NULL DEFAULT 'available',
+  `rental_state` ENUM('available', 'long', 'short', 'unavailable') NOT NULL DEFAULT 'available',
   PRIMARY KEY (`locker_num`),
   UNIQUE INDEX `locker_num_UNIQUE` (`locker_num` ASC) VISIBLE)
 ENGINE = InnoDB;
@@ -102,6 +102,7 @@ SHOW WARNINGS;
 DROP TABLE IF EXISTS `db_locks`.`log`;
 CREATE TABLE IF NOT EXISTS `db_locks`.`log` (
   `student_id` INT UNSIGNED NOT NULL,
+  `locker_num` INT NOT NULL,
   `start_date` DATETIME NOT NULL,
   `end_date` DATETIME NOT NULL)
 ENGINE = InnoDB;

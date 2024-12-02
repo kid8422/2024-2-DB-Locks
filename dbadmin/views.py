@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from django.apps import apps
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
 from datetime import datetime
 import json
@@ -51,7 +51,30 @@ def dbadmin_home(request):
     with connection.cursor() as cursor:
         cursor.execute("SHOW TABLES;")
     return render(request, 'dbadmin/home.html')
-   
+
+def transform_rent_type(code):
+    mapping = {
+        "available": "이용 가능",
+        "long": "장기 대여",
+        "short": "단기 대여",
+        "unavailable": "사용 불가"
+    }
+    return mapping.get(code, code)
+
+def reverse_transform_rent_type(korean):
+    mapping = {
+        "이용 가능": "available",
+        "장기 대여": "long",
+        "단기 대여": "short",
+        "사용 불가": "unavailable"
+    }
+    return mapping.get(korean, korean)
+
+def format_datetime(dt):
+    if isinstance(dt, datetime):
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+    return dt
+
 @login_required(login_url='dbadmin_login')
 def get_lockers_data(request):
     display_head = ('locker_num', 'TAG', 'rental_state')  # 실제 필드명 사용
@@ -64,7 +87,7 @@ def get_lockers_data(request):
     data = {
         "head": head,
         "rows": [
-            dict(zip(head, [transform_rent_type(value) if col == '대여 여부' else value for col, value in zip(head, row)]))
+            dict(zip(head, [transform_rent_type(row[2]) if col == '대여 여부' else row[i] for i, (col, value) in enumerate(zip(head, row))]))
             for row in result
         ]
     }
@@ -89,10 +112,13 @@ def get_rent_data(request):
         "head": head,
         "rows": [
             dict(zip(head, [
-                format_datetime(value) if col in ['대여 시작 날짜', '대여 종료 날짜'] else 
-                transform_rent_type(value) if col == '대여 구분' else 
-                value 
-                for col, value in zip(head, row)
+                row[0],
+                row[1],  # 이름
+                row[2],  # 학번
+                row[3],  # 학과(부)
+                transform_rent_type(row[4]),  # 대여 구분 (이미 변환)
+                format_datetime(row[5]),
+                format_datetime(row[6])
             ]))
             for row in result
         ]
@@ -118,9 +144,12 @@ def get_log_data(request):
         "head": head,
         "rows": [
             dict(zip(head, [
-                format_datetime(value) if col in ['대여 시작 날짜', '대여 종료 날짜'] else 
-                value 
-                for col, value in zip(head, row)
+                row[0],  # 이름
+                row[1],  # 학번
+                row[2],  # 학과(부)
+                row[3],  # 사물함 번호
+                format_datetime(row[4]),
+                format_datetime(row[5])
             ]))
             for row in result
         ]
@@ -145,82 +174,46 @@ def get_student_data(request):
     return JsonResponse(data)
 
 @login_required(login_url='dbadmin_login')
-def update_data(request, table_name):
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+@csrf_exempt
+def update_data(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            print(data)
+            if data['table_name'] == 'lockers':
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE lockers SET rental_state = %s WHERE locker_num = %s",
+                        [data['rental_state'], data['사물함 번호']]
+                    )
+            elif data['table_name'] == 'rent':
+                rental_state_mapping = {
+                    '이용 가능': 'available',
+                    '장기 대여': 'long',
+                    '단기 대여': 'short',
+                    '사용 불가': 'unavailable'
+                }
+                data['대여 구분'] = rental_state_mapping[data['대여 구분']]
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE rent SET student_id = %s, rent_type = %s, start_date = %s, end_date = %s WHERE locker_num = %s",
+                        [data['학번'], data['대여 구분'], data['대여 시작 날짜'], data['대여 종료 날짜'], data['사물함 번호']]
+                    )
+            elif data['table_name'] == 'log':
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE log SET locker_num = %s, start_date = %s, end_date = %s WHERE student_id = %s",
+                        [data['사물함 번호'], data['대여 시작 날짜'], data['대여 종료 날짜'], data['학번']]
+                    )
+            elif data['table_name'] =='student':
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE student SET name = %s, department = %s WHERE student_id = %s",
+                        [data['이름'], data['학과(부)'], data['학번']]
+                    )
+            return JsonResponse({'success': True, 'message': '변경 사항이 적용되었습니다'})
+        except Exception as e:  
+            return JsonResponse({'success': False, 'message': '변경에 실패하였습니다. 다시 시도해 주세요.'})
     
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        
     
-    # 업데이트 가능한 테이블 목록
-    allowed_tables = ['lockers', 'rent', 'log', 'student']
-    if table_name not in allowed_tables:
-        return JsonResponse({'success': False, 'error': 'Invalid table name'}, status=400)
-    
-    # 각 테이블의 기본 키 설정
-    primary_keys = {
-        'lockers': 'locker_num',
-        'rent': 'id',      # 실제 기본 키 필드명으로 변경 필요
-        'log': 'id',       # 실제 기본 키 필드명으로 변경 필요
-        'student': 'student_id',
-    }
-    
-    pk_field = primary_keys.get(table_name)
-    if not pk_field:
-        return JsonResponse({'success': False, 'error': 'Primary key not defined for table'}, status=400)
-    
-    pk = data.get('pk')
-    if not pk:
-        return JsonResponse({'success': False, 'error': 'Primary key not provided'}, status=400)
-    
-    # 'rental_state' 값 변환 (한글 -> 코드)
-    if table_name == 'lockers' and 'rental_state' in data:
-        rental_state_mapping = {
-            "이용 가능": "available",
-            "장기 대여": "long",
-            "단기 대여": "short",
-            "사용 불가": "unavailable"
-        }
-        data['rental_state'] = rental_state_mapping.get(data['rental_state'], data['rental_state'])
-    
-    # SET 절 생성
-    set_fields = []
-    values = []
-    for key, value in data.items():
-        if key == 'pk':
-            continue
-        set_fields.append(f"{key} = %s")
-        values.append(value)
-    
-    if not set_fields:
-        return JsonResponse({'success': False, 'error': 'No fields to update'}, status=400)
-    
-    set_clause = ", ".join(set_fields)
-    values.append(pk)  # WHERE 절을 위한 값 추가
-    
-    # UPDATE 쿼리 실행
-    try:
-        with connection.cursor() as cursor:
-            sql = f"UPDATE {table_name} SET {set_clause} WHERE {pk_field} = %s"
-            cursor.execute(sql, values)
-        return JsonResponse({'success': True})
-    except Exception as e:
-        print(e)
-        return JsonResponse({'success': False, 'error': 'Database update failed'}, status=500)
-
- # 대여 구분 변환 함수
-def transform_rent_type(rent_type):
-    mapping = {
-        "available": "이용 가능",
-        "long": "장기 대여",
-        "short": "단기 대여",
-        "unavailable": "사용 불가"
-    }
-    return mapping.get(rent_type, rent_type)
-
-def format_datetime(dt):
-    if isinstance(dt, datetime):
-        return dt.strftime('%Y-%m-%d %H:%M:%S')
-    return dt

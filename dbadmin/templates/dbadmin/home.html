@@ -6,13 +6,13 @@
     <title>DataBase Management</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'main/css/admin.css' %}">
-    <script src="{% static 'main/js/admin.js' %}"></script>
     <script>
         const LOGOUT = "{% url 'dbadmin_logout' %}";
         const LOCKERS = "{% url 'get_lockers_data' %}";
         const RENT = "{% url 'get_rent_data' %}";
         const LOG = "{% url 'get_log_data' %}";
         const STUDENT = "{% url 'get_student_data' %}";
+        const UPDATE = "{% url 'update_data' %}";
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -84,7 +84,7 @@
         <div class="w-3/4 p-6 overflow-y-auto">
             <div class="flex justify-between mb-4">
                 <h1 class="text-2xl font-bold" id="table-title">DB 테이블</h1>
-                <button class="px-4 py-2 bg-blue-600 text-white rounded shadow" onclick="reloadCurrentTable()">새로고침</button>
+                <button class="px-4 py-2 bg-blue-600 text-white rounded shadow" onclick="location.reload()">새로고침</button>
             </div>
             <div class="flex mb-4">
                 <button class="px-4 py-2 bg-blue-600 text-white rounded shadow mr-2">사용자 추가</button>
@@ -92,9 +92,9 @@
                 <button class="px-4 py-2 bg-green-600 text-white rounded shadow">내보내기</button>
             </div>
             <div class="bg-white rounded shadow">
-                <div class="p-4">
+                <div class="p-4 overflow-x-auto">
                     <input type="text" placeholder="검색하기..." class="w-full p-2 mb-4 border rounded">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left table-fixed">
                         <thead id="data-head" class="text-m font-bold mb-2">
 
                         </thead>
@@ -128,5 +128,8 @@
             </form>
         </div>
     </div>
+
+    <!-- admin.js 스크립트 이동 -->
+    <script src="{% static 'main/js/admin.js' %}"></script>
 </body>
 </html>

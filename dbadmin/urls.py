@@ -9,4 +9,5 @@ urlpatterns = [
     path('get-rent-data/', views.get_rent_data, name='get_rent_data'),
     path('get-log-data/', views.get_log_data, name='get_log_data'),
     path('get-student-data/', views.get_student_data, name='get_student_data'),
+    path('update-data/', views.update_data, name='update_data'),  # table_name 매개변수 제거
 ]

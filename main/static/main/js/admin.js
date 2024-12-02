@@ -2,6 +2,28 @@
 
 let currentTableURL = null; // 현재 선택된 테이블 URL
 let currentHead = []; // 현재 테이블 헤더
+let currentTable = ''; // 현재 선택된 테이블 이름
+
+// Display Name to DB Field Name Mapping
+const fieldMapping = {
+    '사물함 번호': 'locker_num',
+    'TAG': 'TAG',
+    '대여 여부': 'rental_state',
+    '이름': 'name',
+    '학번': 'student_id',
+    '학과(부)': 'department',
+    '대여 구분': 'rent_type',
+    '대여 시작 날짜': 'start_date',
+    '대여 종료 날짜': 'end_date'
+};
+
+// Mapping from URL to table name
+const urlToTableName = {
+    [LOCKERS]: 'lockers',
+    [RENT]: 'rent',
+    [LOG]: 'log',
+    [STUDENT]: 'student'
+};
 
 // 데이터 로드 함수
 async function loadData(DBname) {
@@ -9,6 +31,10 @@ async function loadData(DBname) {
         currentTableURL = DBname; // 현재 URL 저장
         localStorage.setItem('currentTableURL', currentTableURL); // 로컬스토리지에 저장
         console.log(`Loading data from: ${DBname}`);
+
+        // Set currentTable based on DBname
+        currentTable = urlToTableName[DBname];
+        console.log(`Current Table: ${currentTable}`);
 
         const response = await fetch(DBname);
         if (!response.ok) {
@@ -39,7 +65,7 @@ async function loadData(DBname) {
             trHead.appendChild(th);
         });
         const actionsTh = document.createElement('th');
-        actionsTh.textContent = "";
+        actionsTh.textContent = ""; // 'Actions' 열 제목 비워둠
         actionsTh.classList.add('w-24', 'text-center', 'px-4', 'py-2'); // 너비 및 정렬 클래스 추가
         trHead.appendChild(actionsTh);
         dataHead.appendChild(trHead);
@@ -89,15 +115,6 @@ async function loadData(DBname) {
     }
 }
 
-// 현재 테이블 새로고침 함수
-function reloadCurrentTable() {
-    if (currentTableURL) {
-        loadData(currentTableURL);
-    } else {
-        alert("새로고침할 테이블이 선택되지 않았습니다.");
-    }
-}
-
 // 수정 모달 열기 함수
 function openEditModal(row) {
     console.log('Opening edit modal for row:', row);
@@ -121,6 +138,7 @@ function openEditModal(row) {
             input = document.createElement('select');
             input.id = `field-${col}`;
             input.name = col;
+            input.setAttribute('aria-label', '대여 여부'); // 접근성 향상을 위한 aria-label 추가
             input.classList.add('mt-1', 'block', 'w-full', 'border', 'border-gray-300', 'rounded-md', 'shadow-sm', 'focus:ring-blue-500', 'focus:border-blue-500');
 
             const options = ["이용 가능", "장기 대여", "단기 대여", "사용 불가"];
@@ -141,6 +159,24 @@ function openEditModal(row) {
             input.name = col;
             input.value = row[col] !== null ? row[col] : '';
             input.classList.add('mt-1', 'block', 'w-full', 'border', 'border-gray-300', 'rounded-md', 'shadow-sm', 'focus:ring-blue-500', 'focus:border-blue-500');
+
+            // 특정 테이블에서 특정 필드 수정 불가능하게 설정
+            if ((currentTable === 'lockers') && ((col === '사물함 번호') || (col === '위치'))) {
+                input.disabled = true; // 수정 불가능하게 설정
+                input.classList.add('disabled-input'); // CSS 클래스 추가
+            }
+            if ((currentTable === 'rent') && ((col === '사물함 번호') || (col === '이름') || (col === '학과(부)'))) {
+                input.disabled = true; // 수정 불가능하게 설정
+                input.classList.add('disabled-input'); // CSS 클래스 추가
+            }
+            if ((currentTable === 'log') && ((col === '이름') || (col === '학번') || (col === '학과(부)'))) {
+                input.disabled = true; // 수정 불가능하게 설정
+                input.classList.add('disabled-input'); // CSS 클래스 추가
+            }
+            if ((currentTable === 'student') && (col === '학번')) {
+                input.disabled = true; // 수정 불가능하게 설정
+                input.classList.add('disabled-input'); // CSS 클래스 추가
+            }
         }
 
         fieldDiv.appendChild(input);
@@ -162,6 +198,22 @@ function closeEditModal() {
     modal.classList.add('hidden');
     document.body.classList.remove('modal-open');
     console.log('Edit modal closed.');
+}
+
+// CSRF 토큰 가져오기 함수
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + '=') {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 // 폼 제출 이벤트 처리
@@ -189,16 +241,22 @@ async function handleFormSubmit(event) {
             "단기 대여": "short",
             "사용 불가": "unavailable"
         };
-        data['대여 여부'] = rentalStateMapping[data['대여 여부']] || data['대여 여부'];
+        data['rental_state'] = rentalStateMapping[data['대여 여부']] || data['rental_state'];
+        delete data['대여 여부']; // 불필요한 필드 제거
     }
+
+    console.log('Request Data:', data);
+
+    // 테이블 이름 추가
+    data['table_name'] = currentTable;
 
     // 업데이트 요청 전송
     try {
-        const response = await fetch(`/update/${getTableNameFromURL(currentTableURL)}/`, {
+        const response = await fetch(UPDATE, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken(),
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
             },
             body: JSON.stringify(data),
         });
@@ -217,31 +275,6 @@ async function handleFormSubmit(event) {
         console.error('Error updating data:', error);
         alert('업데이트 중 오류가 발생했습니다.');
     }
-}
-
-// CSRF 토큰 가져오기 함수
-function getCSRFToken() {
-    const name = 'csrftoken';
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + '=')) {
-            return decodeURIComponent(cookie.substring(name.length + 1));
-        }
-    }
-    return '';
-}
-
-// URL에서 테이블 이름 추출 함수
-function getTableNameFromURL(url) {
-    // 예: '/get_lockers_data/' 에서 'lockers' 추출
-    const parts = url.split('/');
-    for (let part of parts) {
-        if (part.startsWith('get_') && part.endsWith('_data')) {
-            return part.replace('get_', '').replace('_data', '');
-        }
-    }
-    return '';
 }
 
 // DOMContentLoaded 이벤트 핸들러

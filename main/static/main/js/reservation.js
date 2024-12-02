@@ -75,7 +75,13 @@ async function select_floor(activeFloor, locker_data) {
             // 버튼 내용 설정
             button.innerHTML = `
                 <div class="locker-label">
-                    ${locker["대여 구분"] === "available" ? "예약 가능" : "대여 중"}
+                    ${
+                        locker["대여 구분"] === "available" 
+                            ? "예약 가능" 
+                            : locker["대여 구분"] === "unavailable" 
+                                ? "예약 불가" 
+                                : "대여 중"
+                    }
                 </div>
                 <hr class="my-1 w-8 border-gray-300">
                 <div class="locker-number">${locker["사물함 번호"]}</div>

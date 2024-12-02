@@ -10,6 +10,10 @@ from django.db import connection
 from bs4 import BeautifulSoup
 from celery import shared_task
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+# 대한민국 시간대 설정
+kst = ZoneInfo('Asia/Seoul')
 
 def login_view(request):
     """
@@ -210,42 +214,32 @@ def load_B1_lockers(request):
 @csrf_exempt
 def return_locker(request):
     if request.method == 'POST':
-        print(0)
         try:
-            print('#')
             data = json.loads(request.body)
             student_id = data['student_id']
             locker_num = data['locker_num']
-            print(student_id, locker_num)
-            print('@')
             with connection.cursor() as cursor:
-                print('!!!')
                 cursor.execute(
                     "SELECT start_date FROM rent WHERE student_id = %s",
                     [student_id]
                 )
-                print('???')
                 start_date = cursor.fetchone()[0]
 
-                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                current_time = datetime.now(kst).strftime('%Y-%m-%d %H:%M:%S')
 
                 # 2-1) lockers 테이블에서 상태 변경
-                print(1)
                 cursor.execute(
                     "UPDATE lockers SET rental_state = 'available' WHERE locker_num = %s",
                     [locker_num]
                 )
 
                 # 2-2) log 테이블에 반납 기록 추가
-                print(2)
-                print(student_id, start_date, current_time)
                 cursor.execute(
                     "INSERT INTO log (student_id, locker_num, start_date, end_date) VALUES (%s, %s, %s, %s)",
                     [student_id, locker_num, start_date, current_time]
                 )
 
                 # 2-4) rent 테이블에서 데이터 삭제
-                print(4)
                 cursor.execute(
                     "DELETE FROM rent WHERE student_id = %s AND locker_num = %s",
                     [student_id, locker_num]
@@ -253,7 +247,6 @@ def return_locker(request):
             return JsonResponse({"success": True, "message": "Locker returned successfully."})
 
         except Exception as e:
-            print('error')
             return JsonResponse({"success": False, "message": str(e)}, status=500)
     
 @shared_task
@@ -263,7 +256,7 @@ def auto_return_locks():
             # 현재 시간 이전에 만료된 사물함 찾기
             cursor.execute(
                 "SELECT locker_num, student_id FROM rent WHERE rental_date < %s",
-                [(datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')]
+                [(datetime.now(kst) - timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')]
             )
             expired_rentals = cursor.fetchall()
 
@@ -277,7 +270,7 @@ def auto_return_locks():
                 # log 테이블에 자동 반납 기록 추가
                 cursor.execute(
                     "INSERT INTO log (student_id, locker_num, action, action_time) VALUES (%s, %s, 'auto-returned', %s)",
-                    [student_id, locker_num, datetime.now().strftime('%Y-%m-%d %H:%M')]
+                    [student_id, locker_num, datetime.now(kst).strftime('%Y-%m-%d %H:%M')]
                 )
 
                 # student 및 rent 테이블에서 데이터 삭제
@@ -299,8 +292,8 @@ def reserve_locker(request):
             student_id = data['student_id']
             student_name = data['student_name']
             student_department = data['student_department']
-            current_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            future_date = (datetime.now() + timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')
+            current_date = datetime.now(kst).strftime('%Y-%m-%d %H:%M:%S')
+            future_date = (datetime.now(kst) + timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')
             print(locker_num, student_id, current_date, future_date)
 
             # 데이터베이스 업데이트
