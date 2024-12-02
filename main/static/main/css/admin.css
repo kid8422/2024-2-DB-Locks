@@ -40,3 +40,8 @@ tbody tr:nth-child(odd) {
 tbody tr:nth-child(even) {
     background-color: #ffffff; /* 짝수 행 색상 */
 }
+
+/* 모달이 열릴 때 스크롤을 방지하려면 body에 클래스 추가 */
+body.modal-open {
+    overflow: hidden;
+}

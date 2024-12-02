@@ -12,28 +12,73 @@
         const MAP_B1 = "{% static 'main/images/형남_B1.png' %}";
         const LOAD_4F = "{% url 'load_4F_lockers' %}";
         const LOAD_B1 = "{% url 'load_B1_lockers' %}";
+        const RESERVE_LOCKER = "{% url 'reserve_locker' %}";
+        const STUDENT_ID = "{{ user_info.student_id }}"
+        const STUDENT_NAME = "{{ user_info.name }}"
+        const STUDENT_DEPARTMENT = "{{ user_info.department }}"
+        const MYRESERVATIONINFO = "{% url 'get_myreservation_info' %}";
+        const RETURN_LOCKER = "{% url 'return_locker' %}";
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-800">
     <div class="container">
+        <!-- Modal -->
+        <div id="reservation-modal" class="hidden fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+                <h2 id="modal-title" class="text-lg font-bold mb-4">예약 확인</h2>
+                <p id="modal-message" class="mb-6"></p>
+                <div class="flex justify-end space-x-4">
+                    <button id="modal-cancel" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">취소</button>
+                    <button id="modal-confirm" class="px-4 py-2 bg-blue-500 text-white rounded-lg">확인</button>
+                </div>
+            </div>
+        </div>
+
+                <!-- 예약 완료 모달 -->
+        <div id="reservation-success-modal" class="hidden fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+                <h2 class="text-lg font-bold mb-4">예약 완료</h2>
+                <p id="success-message" class="mb-6"></p>
+                <div class="flex justify-end">
+                    <button id="success-close" class="px-4 py-2 bg-blue-500 text-white rounded-lg">확인</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Left Panel -->
         <div class="left-panel">
             <div class="info-card">
-                <h2 class="info-title">내 정보</h2>
-                <p class="info-item">이름: <span class="font-bold">{{ user_info.name }}</span></p>
-                <p class="info-item">학과: <span class="font-bold">{{ user_info.department }}</span></p>
-                <p class="info-item">학번: <span class="font-bold">{{ user_info.student_id }}</span></p>
+                <h2 class="info-title">환영합니다!</h2>
+                <p class="info-name">{{ user_info.name }}님</p> <!-- 이름 강조 -->
+            
+                <div class="info-details">
+                    <div class="info-item">
+                        <span class="label">학과:</span>
+                        <span>{{ user_info.department }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">학번:</span>
+                        <span>{{ user_info.student_id }}</span>
+                    </div>
+                </div>
+            
+                <p class="info-footer">사물함 예약을 간편하게! 🚀</p>
             </div>
+            
 
             <!-- 나의 예약 현황 버튼 -->
             <div class="reservation-status">
-                <button id="my-reservation-btn" class="w-full bg-gray-300 text-black rounded-lg py-2 font-semibold">
-                    나의 예약 현황
-                </button>
-                <div id="reservation-info" class="mt-4"></div>
+                <!-- 동적으로 표시될 선택된 층과 사물함 번호 -->
+                <div class="selected-locker-info">
+                    <p class="selected-locker-title">선택된 사물함</p>
+                    <p id="selected-floor" class="selected-floor"></p> <!-- 동적으로 층 업데이트 -->
+                    <p id="selected-locker-number" class="selected-locker-number"></p> <!-- 동적으로 번호 업데이트 -->
+                    <button class="reserve-button" onclick="confirmReservation()">예약하기</button>
+                </div>
             </div>
+            
 
             <!-- 구역 선택 -->
             <div class="area-selection mt-auto">
@@ -51,9 +96,22 @@
 
         <!-- Center Panel -->
         <div class="center-panel">
-            <!-- Map Placeholder -->
-            <div class="map-placeholder">
-                <img id="map-image" src="{% static 'main/images/형남_4F.png' %}" alt="형남공학관 지도" class="h-full w-full object-contain rounded-lg">
+            <div class="content-container">
+                <!-- Map Placeholder -->
+                <div class="map-placeholder">
+                    <img id="map-image" src="{% static 'main/images/형남_4F.png' %}" alt="형남공학관 지도" class="h-full w-full object-contain rounded-lg">
+                </div>
+
+            
+                <!-- 예약 현황 창 -->
+                <div class="reservation-panel">
+                    <h3>예약 현황</h3>
+                    <div id="reservation-details" class="reservation-details">
+                        <p class="no-reservation">예약한 사물함 정보가 없습니다.</p> <!-- 기본 메시지 -->
+                    </div>
+                </div>
+
+
             </div>
 
             <!-- Locker Selection -->
@@ -62,6 +120,7 @@
                 <div id="locker-grid" class="locker-grid"></div>
             </div>
         </div>
+
     </div>
 </body>
 </html>

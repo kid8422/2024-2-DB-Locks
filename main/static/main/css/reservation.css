@@ -27,28 +27,229 @@ body {
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
-
 .info-card {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff; /* 흰색 배경 */
+    border-radius: 16px; /* 모서리를 둥글게 */
+    padding: 24px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 */
+    text-align: center;
+    border: 2px solid #007bff; /* 파란색 테두리 */
+    position: relative;
+    margin-bottom: 20px;
 }
 
 .info-title {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    margin-bottom: 8px;
+    color: #007bff; /* 파란색 강조 */
+    margin-bottom: 12px;
+}
+
+.info-name {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333333; /* 진한 회색 */
+    margin-bottom: 16px;
+}
+
+.info-details {
+    font-size: 1rem;
+    color: #444444;
+    line-height: 1.6;
+    margin-bottom: 20px;
 }
 
 .info-item {
-    font-size: 0.875rem;
-    color: #555;
-    margin-bottom: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* 라벨과 값 간격 */
+    margin: 10px 0;
+    background-color: #f0f8ff; /* 하늘색 배경 */
+    padding: 10px;
+    border-radius: 12px; /* 상자 둥글게 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 */
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #007bff; /* 파란색 텍스트 */
 }
+
+.info-item .label {
+    font-weight: bold;
+    color: #0056b3; /* 진한 파란색 */
+    font-size: 1rem;
+}
+.info-footer {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #555;
+    font-style: italic; /* 글씨체 기울임 */
+}
+
+/* 예약 현황 창 스타일 */
+.reservation-panel {
+    flex: 0.6;
+    background-color: #eaecef;
+    border-radius: 20px; /* 더 부드러운 둥근 모서리 */
+    padding: 24px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* 부드럽고 강한 그림자 */
+    text-align: center;
+    min-height: 260px; /* 창 크기 고정 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    
+}
+
+/* 제목 스타일 */
+.reservation-panel h3 {
+    font-size: 1.8rem; /* 제목 크기 증가 */
+    font-weight: bold;
+    color: #003d7e;
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); /* 텍스트 그림자 */
+}
+
+/* 예약 세부 정보 */
+.reservation-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+    font-size: 1rem;
+    color: #333;
+    justify-content: center;
+}
+
+
+
+/* 사물함 번호 강조 */
+.locker-number {
+    font-size: 2rem; /* 사물함 번호 크기 증가 */
+    font-weight: bold;
+    color: #0056b3; /* 진한 파란색 */
+    text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.3); /* 텍스트 그림자 */
+    margin: 0;
+}
+
+/* 대여 기간 스타일 */
+.rental-period {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 1rem;
+    color: #444;
+}
+
+.rental-period .label {
+    font-weight: bold;
+    color: #007bff;
+    text-transform: uppercase; /* 대문자로 강조 */
+}
+
+.rental-period .value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #333333;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* 날짜 강조 */
+.rental-period .value .date {
+    color: #0056b3; /* 진한 파란색 */
+    font-size: 1.4rem; /* 날짜 크기 증가 */
+}
+
+.rental-period .value .time {
+    color: #777777; /* 연한 회색 */
+    font-size: 1.2rem; /* 시간은 날짜보다 작게 */
+}
+
+/* 예약 정보가 없을 때 */
+.no-reservation {
+    font-size: 1.2rem;
+    color: #777777;
+    font-style: italic;
+}
+
 
 .reservation-status {
     margin-bottom: 20px;
+    text-align: center; /* 가운데 정렬 */
+}
+
+/* 선택된 사물함 영역 스타일 */
+.selected-locker-info {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f0f8ff; /* 밝은 파란색 배경 */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 그림자 */
+    text-align: center; /* 텍스트 중앙 정렬 */
+}
+
+
+/* 선택된 사물함 강조 스타일 */
+.locker-item.selected {
+    background-color: #007bff; /* 파란색 */
+    color: white;
+    border-color: #0056b3;
+}
+
+/* 선택된 사물함의 문구 색 변경 */
+.locker-item.selected .locker-label {
+    color: #ffffff; /* 흰색 텍스트 */
+}
+/* 선택된 사물함 번호 색 변경 */
+.locker-item.selected .locker-number {
+    color: #ffffff; /* 흰색 텍스트 */
+}
+
+/* "층 정보" 텍스트 스타일 */
+.selected-floor {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #666; /* 중간 회색 */
+    margin-bottom: 5px;
+}
+
+
+/* "선택된 사물함" 텍스트 스타일 */
+.selected-locker-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333; /* 진한 회색 */
+    margin-bottom: 10px;
+}
+
+/* 선택된 번호 강조 */
+.selected-locker-number {
+    font-size: 2.5rem; /* 큰 글씨 */
+    font-weight: bold;
+    color: #007bff; /* 파란색 강조 */
+    text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.3); /* 텍스트 그림자 */
+    margin-bottom: 12px;
+}
+
+/* 예약 버튼 스타일 */
+.reserve-button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    background-color: #007bff; /* 파란색 버튼 */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.reserve-button:hover {
+    background-color: #0056b3; /* 어두운 파란색 */
 }
 
 .center-panel {
@@ -57,23 +258,32 @@ body {
     height: 100%;
 }
 
+/* 지도와 예약 현황 컨테이너 */
+.content-container {
+    display: flex; /* 지도와 예약 현황을 나란히 배치 */
+    align-items: flex-start; /* 상단 정렬 */
+    gap: 20px; /* 지도와 예약 현황 사이 간격 */
+}
+
+/* 지도 영역 */
 .map-placeholder {
-    height: 240px;
-    background-color: #e5e7eb;
-    border-radius: 8px;
+    flex: 1; /* 지도 영역이 예약 현황보다 더 넓게 차지 */
+    height: 260px;
+    background-color: #eaecef;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* 부드럽고 강한 그림자 */
+    margin-bottom: 15px; /* 아래와의 간격 추가 */
 }
 
 .locker-selection {
     flex: 1;
     background-color: white;
-    border-radius: 8px;
+    border-radius: 20px;
     padding: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     overflow-x: auto;
 }
 
@@ -121,4 +331,68 @@ body {
     font-size: 18px;
     font-weight: bold;
     color: black;
+}
+
+/* Modal 기본 스타일 */
+.hidden {
+    display: none;
+}
+
+.return-button {
+    position: absolute; /* 부모 요소를 기준으로 위치 */
+    bottom: -5px; /* 사물함 번호 아래에 여백 */
+    right: 0; /* 오른쪽 정렬 */
+    bottom: -15px; /* 사물함 번호 아래로 이동 */
+    transform: translateX(200%); /* 버튼을 오른쪽으로 약간 이동 */
+    width: auto; /* 버튼 너비를 내용에 맞게 조정 */
+    height: auto; /* 버튼 높이를 내용에 맞게 조정 */
+    padding: 8px 16px; /* 버튼 내 여백 설정 */
+    font-size: 0.9rem; /* 텍스트 크기 */
+    font-weight: bold;
+    color: white;
+    background-color: #f44336; /* 빨간색 */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    display: inline-block; /* 세로 길이 문제 해결 */
+    text-align: center; /* 텍스트 가운데 정렬 */
+    line-height: normal; /* 텍스트 라인 높이를 기본으로 설정 */
+}
+
+.return-button:hover {
+    background-color: #d32f2f; /* 어두운 빨간색 */
+}
+
+.reservation-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.locker-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* 반납 버튼 위치 조정에 필요 */
+}
+
+.selected-locker-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff; /* 파란색 강조 */
+    text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.3); /* 텍스트 그림자 */
+    margin-bottom: 12px;
+}
+
+.return-button:hover {
+    background-color: #d32f2f; /* 어두운 빨간색 */
+}
+
+.rental-period {
+    font-size: 1rem;
+    color: #444;
+    text-align: center;
 }

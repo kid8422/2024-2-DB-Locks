@@ -11,5 +11,8 @@ urlpatterns = [
     path('reservation/', views.reservation_view, name='reservation'),
     path('load-4F-lockers/', views.load_4F_lockers, name='load_4F_lockers'),
     path('load-B1-lockers/', views.load_B1_lockers, name='load_B1_lockers'),
+    path('reserve-locker/', views.reserve_locker, name='reserve_locker'),
+    path('return-locker/', views.return_locker, name='return_locker'),
+    path('get-myreservation-info/', views.get_myreservation_info, name='get_myreservation_info'),
     #path('test-parse/', views.test_parse_view, name='test_parse'),  # 테스트 URL (선택 사항)
 ]

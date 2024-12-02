@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
 from bs4 import BeautifulSoup
+from celery import shared_task
+from datetime import datetime, timedelta
 
 def login_view(request):
     """
@@ -204,3 +206,177 @@ def load_B1_lockers(request):
     }
 
     return JsonResponse(data)
+    
+@csrf_exempt
+def return_locker(request):
+    if request.method == 'POST':
+        print(0)
+        try:
+            print('#')
+            data = json.loads(request.body)
+            student_id = data['student_id']
+            locker_num = data['locker_num']
+            print(student_id, locker_num)
+            print('@')
+            with connection.cursor() as cursor:
+                print('!!!')
+                cursor.execute(
+                    "SELECT start_date FROM rent WHERE student_id = %s",
+                    [student_id]
+                )
+                print('???')
+                start_date = cursor.fetchone()[0]
+
+                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                # 2-1) lockers 테이블에서 상태 변경
+                print(1)
+                cursor.execute(
+                    "UPDATE lockers SET rental_state = 'available' WHERE locker_num = %s",
+                    [locker_num]
+                )
+
+                # 2-2) log 테이블에 반납 기록 추가
+                print(2)
+                print(student_id, start_date, current_time)
+                cursor.execute(
+                    "INSERT INTO log (student_id, locker_num, start_date, end_date) VALUES (%s, %s, %s, %s)",
+                    [student_id, locker_num, start_date, current_time]
+                )
+
+                # 2-4) rent 테이블에서 데이터 삭제
+                print(4)
+                cursor.execute(
+                    "DELETE FROM rent WHERE student_id = %s AND locker_num = %s",
+                    [student_id, locker_num]
+                )
+            return JsonResponse({"success": True, "message": "Locker returned successfully."})
+
+        except Exception as e:
+            print('error')
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+    
+@shared_task
+def auto_return_locks():
+    try:
+        with connection.cursor() as cursor:
+            # 현재 시간 이전에 만료된 사물함 찾기
+            cursor.execute(
+                "SELECT locker_num, student_id FROM rent WHERE rental_date < %s",
+                [(datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')]
+            )
+            expired_rentals = cursor.fetchall()
+
+            for locker_num, student_id in expired_rentals:
+                # lockers 테이블 상태 변경
+                cursor.execute(
+                    "UPDATE lockers SET rental_state = 'available' WHERE locker_num = %s",
+                    [locker_num]
+                )
+
+                # log 테이블에 자동 반납 기록 추가
+                cursor.execute(
+                    "INSERT INTO log (student_id, locker_num, action, action_time) VALUES (%s, %s, 'auto-returned', %s)",
+                    [student_id, locker_num, datetime.now().strftime('%Y-%m-%d %H:%M')]
+                )
+
+                # student 및 rent 테이블에서 데이터 삭제
+                cursor.execute("DELETE FROM student WHERE student_id = %s", [student_id])
+                cursor.execute("DELETE FROM rent WHERE student_id = %s AND locker_num = %s", [student_id, locker_num])
+
+        return "Auto return process completed."
+
+    except Exception as e:
+        return f"Error in auto-return process: {str(e)}"
+    
+@csrf_exempt
+def reserve_locker(request):
+    if request.method == 'POST':
+        try:
+            # 클라이언트에서 데이터 수신
+            data = json.loads(request.body)
+            locker_num = data['locker_num']
+            student_id = data['student_id']
+            student_name = data['student_name']
+            student_department = data['student_department']
+            current_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            future_date = (datetime.now() + timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')
+            print(locker_num, student_id, current_date, future_date)
+
+            # 데이터베이스 업데이트
+            with connection.cursor() as cursor:
+                # 대여 가능 여부 확인
+                print(1)
+                cursor.execute(
+                    "SELECT COUNT(*) FROM rent WHERE student_id = %s",
+                    [student_id]
+                )
+                result = cursor.fetchone()[0]
+                print("result :", result)
+                if result != 0:
+                    return JsonResponse({'success': False, 'message': '대여 중인 사물함이 있습니다.'})
+
+                # studnet 테이블 추가
+                print(2)
+                cursor.execute(
+                    "SELECT COUNT(*) FROM student WHERE student_id = %s",
+                    [student_id]
+                )
+                count = cursor.fetchone()[0]
+                if (count == 0):
+                    cursor.execute(
+                        "INSERT INTO student (student_id, name, department) VALUES (%s, %s, %s)",
+                        [student_id, student_name, student_department]
+                    )
+
+                # rent 테이블 추가
+                print(3)
+                cursor.execute(
+                    "INSERT INTO rent (locker_num, student_id, rent_type, start_date, end_date) VALUES (%s, %s, 'short', %s, %s)",
+                    [locker_num, student_id, current_date, future_date]
+                )
+
+                print(5)
+                # lockers 테이블 업데이트
+                cursor.execute(
+                    "UPDATE lockers SET rental_state = 'short' WHERE locker_num = %s",
+                    [locker_num]
+                )
+                print(6)
+
+            return JsonResponse({'success': True, 'message': f'{locker_num}번 사물함이 예약되었습니다.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+# STUDENT_ID를 이용해 rent 테이블에서 예약 정보를 가져옵니다.
+@csrf_exempt
+def get_myreservation_info(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            student_id = data['student_id']
+            with connection.cursor() as cursor:
+                # rent 테이블에서 학생의 예약 정보를 검색
+                cursor.execute("SELECT locker_num, start_date, end_date FROM rent WHERE student_id = %s",
+                    [student_id]
+                )
+                result = cursor.fetchone()
+                start_date = result[1].strftime('%Y-%m-%d %H:%M')
+                end_date = result[2].strftime('%Y-%m-%d %H:%M')
+
+                cursor.execute("SELECT TAG FROM lockers WHERE locker_num = %s",
+                    [result[0]]
+                )
+                tag = cursor.fetchone()[0]
+                print(tag, result[0], start_date, end_date)
+            return JsonResponse({'success': True, 'data': {
+                'floor': tag,
+                'locker_num': result[0],
+                'start_date': start_date,
+                'end_date': end_date
+            }})
+        except Exception as e:
+            print('error')
+            return JsonResponse({'success': False, 'data': str(e)})

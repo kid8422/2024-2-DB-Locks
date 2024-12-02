@@ -5,11 +5,11 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema db_locks
+-- Schema locker
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
--- Schema db_locks
+-- Schema locker
 -- -----------------------------------------------------
 DROP SCHEMA IF EXISTS `db_locks`;
 CREATE SCHEMA IF NOT EXISTS `db_locks` DEFAULT CHARACTER SET utf8 ;
@@ -17,7 +17,7 @@ SHOW WARNINGS;
 USE `db_locks` ;
 
 -- -----------------------------------------------------
--- Table `db_locks`.`lockers`
+-- Table `locker`.`lockers`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `db_locks`.`lockers`;
 CREATE TABLE IF NOT EXISTS `db_locks`.`lockers` (
@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS `db_locks`.`lockers` (
   UNIQUE INDEX `locker_num_UNIQUE` (`locker_num` ASC) VISIBLE)
 ENGINE = InnoDB;
 
+-- lockers 테이블 데이터 삽입
+-- 1부터 20까지 TAG = 'B1'
 INSERT INTO lockers (locker_num, TAG)
 VALUES 
     (1, 'B1'), (2, 'B1'), (3, 'B1'), (4, 'B1'), (5, 'B1'),
@@ -53,10 +55,11 @@ VALUES
     (81, '4F'), (82, '4F'), (83, '4F'), (84, '4F'), (85, '4F'),
     (86, '4F'), (87, '4F'), (88, '4F'), (89, '4F'), (90, '4F');
 
+
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `db_locks`.`student`
+-- Table `locker`.`student`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `db_locks`.`student`;
 CREATE TABLE IF NOT EXISTS `db_locks`.`student` (
@@ -70,15 +73,15 @@ ENGINE = InnoDB;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `db_locks`.`rent`
+-- Table `locker`.`rent`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `db_locks`.`rent`;
 CREATE TABLE IF NOT EXISTS `db_locks`.`rent` (
   `locker_num` INT UNSIGNED NOT NULL,
   `student_id` INT UNSIGNED NOT NULL,
   `rent_type` ENUM('long', 'short') NOT NULL,
-  `start_date` DATETIME NOT NULL,
-  `end_date` DATETIME NOT NULL,
+  `date` DATETIME NOT NULL,
+  `duration` INT UNSIGNED NOT NULL DEFAULT 3,
   PRIMARY KEY (`locker_num`),
   UNIQUE INDEX `locker_num_UNIQUE` (`locker_num` ASC) VISIBLE,
   UNIQUE INDEX `student_id_UNIQUE` (`student_id` ASC) VISIBLE,
@@ -97,13 +100,15 @@ ENGINE = InnoDB;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `db_locks`.`log`
+-- Table `locker`.`log`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `db_locks`.`log`;
 CREATE TABLE IF NOT EXISTS `db_locks`.`log` (
   `student_id` INT UNSIGNED NOT NULL,
-  `start_date` DATETIME NOT NULL,
-  `end_date` DATETIME NOT NULL)
+  `date` DATETIME NOT NULL,
+  `duration` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`student_id`),
+  UNIQUE INDEX `student_id_UNIQUE` (`student_id` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
