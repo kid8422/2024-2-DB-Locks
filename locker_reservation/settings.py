@@ -20,6 +20,8 @@ pymysql.install_as_MySQLdb()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv()
+SECRET_KEY = os.getenv("DJANGO_SECRET")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -92,7 +94,6 @@ USER = os.getenv("USER")
 PASSWORD = os.getenv("PASSWORD")
 IP = os.getenv("IP")
 PORT = os.getenv("PORT")
-
 
 DATABASES = {
     'default': {
