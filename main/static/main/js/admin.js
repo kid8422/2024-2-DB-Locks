@@ -161,32 +161,25 @@ function openEditModal(row) {
             input.classList.add('mt-1', 'block', 'w-full', 'border', 'border-gray-300', 'rounded-md', 'shadow-sm', 'focus:ring-blue-500', 'focus:border-blue-500');
 
             // 특정 테이블에서 특정 필드 수정 불가능하게 설정
-            if ((currentTable === 'lockers') && ((col === '사물함 번호') || (col === '위치'))) {
-                input.disabled = true; // 수정 불가능하게 설정
-                input.classList.add('disabled-input'); // CSS 클래스 추가
-            }
-            if ((currentTable === 'rent') && ((col === '사물함 번호') || (col === '이름') || (col === '학과(부)'))) {
-                input.disabled = true; // 수정 불가능하게 설정
-                input.classList.add('disabled-input'); // CSS 클래스 추가
-            }
-            if ((currentTable === 'log') && ((col === '이름') || (col === '학번') || (col === '학과(부)'))) {
-                input.disabled = true; // 수정 불가능하게 설정
-                input.classList.add('disabled-input'); // CSS 클래스 추가
-            }
-            if ((currentTable === 'student') && (col === '학번')) {
-                input.disabled = true; // 수정 불가능하게 설정
-                input.classList.add('disabled-input'); // CSS 클래스 추가
+            // 특정 테이블에서 특정 필드 수정 불가능하게 설정
+            if (
+                (currentTable === 'lockers' && (col === '사물함 번호' || col === '위치')) ||
+                (currentTable === 'rent' && (col === '사물함 번호' || col === '이름' || col === '학과(부)')) ||
+                (currentTable === 'log' && (col === '이름' || col === '학번' || col === '학과(부)')) ||
+                (currentTable === 'student' && col === '학번')
+            ) {
+                input.readOnly = true; // 수정 불가능하게 설정
+                input.classList.add('readonly-input'); // CSS 클래스 추가
+                input.setAttribute('aria-readonly', 'true'); // 접근성 향상
+                console.log(`Field "${col}" is read-only.`);
+            } else {
+                console.log(`Field "${col}" is editable.`);
             }
         }
 
         fieldDiv.appendChild(input);
         formFields.appendChild(fieldDiv);
     });
-
-    // 폼에 기본 키 저장 (가정: 첫 번째 열이 기본 키)
-    const pkField = currentHead[0];
-    formFields.dataset.pk = row[pkField];
-    console.log(`Primary key (${pkField}):`, row[pkField]);
 
     document.body.classList.add('modal-open');
     modal.classList.remove('hidden');
@@ -221,34 +214,17 @@ async function handleFormSubmit(event) {
     event.preventDefault();
 
     const form = event.target;
-    const formFields = document.getElementById('form-fields');
     const formData = new FormData(form);
     const data = {};
     formData.forEach((value, key) => {
         data[key] = value;
     });
 
-    // 기본 키 가져오기
-    const pk = formFields.dataset.pk;
-    data['pk'] = pk;
-    console.log('Form data submitted:', data);
-
-    // '대여 여부' 값을 코드로 변환
-    if (data['대여 여부']) {
-        const rentalStateMapping = {
-            "이용 가능": "available",
-            "장기 대여": "long",
-            "단기 대여": "short",
-            "사용 불가": "unavailable"
-        };
-        data['rental_state'] = rentalStateMapping[data['대여 여부']] || data['rental_state'];
-        delete data['대여 여부']; // 불필요한 필드 제거
-    }
+    data['table_name'] = currentTable;
 
     console.log('Request Data:', data);
 
     // 테이블 이름 추가
-    data['table_name'] = currentTable;
 
     // 업데이트 요청 전송
     try {

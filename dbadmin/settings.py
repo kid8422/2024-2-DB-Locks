@@ -25,7 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-no=*&^*ukq@dw#)l=lqddak=qz&3sz82de^6^aaxm9xk1*k(1@'
+load_dotenv()
+SECRET_KEY = os.getenv("DJANGO_SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -85,18 +86,20 @@ WSGI_APPLICATION = 'locker_reservation.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-load_dotenv()
+NAME = os.getenv('NAME')
+USER = os.getenv("USER")
 PASSWORD = os.getenv("PASSWORD")
 IP = os.getenv("IP")
+PORT = os.getenv("PORT")
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # MySQL 백엔드 사용
-        'NAME': 'DB_Locks',                # 데이터베이스 이름
-        'USER': 'Locks',                       # MySQL 사용자 이름
+        'NAME': NAME,                # 데이터베이스 이름
+        'USER': USER,                       # MySQL 사용자 이름
         'PASSWORD': PASSWORD,          # MySQL 사용자 비밀번호
         'HOST': IP,                  # 데이터베이스 서버 (로컬)
-        'PORT': '3306',                       # MySQL 기본 포트
+        'PORT': PORT,                       # MySQL 기본 포트
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",  # 엄격한 SQL 모드
         },
